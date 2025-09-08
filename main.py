@@ -8,7 +8,7 @@ from core.models import Base, db_helper
 from api_v1 import router as router_v1
 from auth import get_current_active_user, router as auth_router
 from models import User
-# from crud import create_user
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -20,3 +20,5 @@ class TestUpdatePartial(TestCreate):
 class Tests(TestsBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    owner_id: int
+    

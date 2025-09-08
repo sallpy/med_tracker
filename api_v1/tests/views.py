@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth import get_current_active_user
+from models import User  
+
 from core.models import db_helper
 from . import crud
 from .schemas import TestCreate, Tests, TestUpdate, TestUpdatePartial
@@ -10,14 +13,17 @@ from .dependencies import test_by_id
 router = APIRouter(tags=['test'])
 
 @router.get('/', response_model=list[Tests])
-async def get_tests(session: AsyncSession=Depends(db_helper.session_dependency)):
-    return await crud.get_tests(session=session)
+async def get_tests(session: AsyncSession=Depends(db_helper.session_dependency),current_user: User = Depends(get_current_active_user),):
+    return await crud.get_tests(session=session,  owner_id=current_user.id)
 
 
 @router.post('/', response_model=Tests, status_code=status.HTTP_201_CREATED)
-async def create_test(test_in: TestCreate, session: AsyncSession=Depends(db_helper.session_dependency)):
-    return await crud.create_test(session=session, test_in=test_in)
-
+async def create_test(
+    test_in: TestCreate,
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(db_helper.session_dependency)
+):
+    return await crud.create_test(session=session, test_in=test_in, owner_id=current_user.id)
 
 
 @router.get('/{test_id}/', response_model=Tests)
@@ -26,16 +32,24 @@ async def get_test(test: Tests = Depends(test_by_id)):
 
 
 @router.put('/{test_id}/')
-async def update_test( test_update: TestUpdate, test: Tests = Depends(test_by_id), session: AsyncSession = Depends(db_helper.session_dependency)):
+async def update_test( test_update: TestUpdate, 
+                      test: Tests = Depends(test_by_id), 
+                      session: AsyncSession = Depends(db_helper.session_dependency),
+                      ):
     return await crud.update_test(session=session, test=test, test_update=test_update)
 
 
 @router.patch('/{test_id}/')
-async def update_test_partial( test_update: TestUpdatePartial, test: Tests = Depends(test_by_id), session: AsyncSession = Depends(db_helper.session_dependency)):
+async def update_test_partial( test_update: TestUpdatePartial, 
+                              test: Tests = Depends(test_by_id), 
+                              session: AsyncSession = Depends(db_helper.session_dependency),
+                              ):
     return await crud.update_test(session=session, test=test, test_update=test_update, partial=True)
 
 
 @router.delete('/{test_id}/', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_test(test: Tests = Depends(test_by_id), session: AsyncSession = Depends(db_helper.session_dependency) ) -> None:
+async def delete_test(test: Tests = Depends(test_by_id),
+                      session: AsyncSession = Depends(db_helper.session_dependency) ,
+                      ) -> None:
     await crud.delete_test(session=session, test=test)
 

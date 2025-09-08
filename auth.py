@@ -35,6 +35,7 @@ def get_password_hash(password):
 def get_user(db, username: str):
     if username in db:
         user_dict = db[username]
+        user_dict.setdefault('id', 1)
         return UserInDB(**user_dict)
 
 
@@ -75,7 +76,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = get_user(fake_users_db, username=token_data.username)
     if user is None:
         raise credentials_exception
-    return user
+    return User(**user.model_dump()) 
 
 
 async def get_current_active_user(
