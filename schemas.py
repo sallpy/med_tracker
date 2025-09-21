@@ -21,6 +21,9 @@ class UserRegister(BaseModel):
 
     @field_validator("password")
     def validate_password(cls, v):
+        """
+        Validate that password is at least 8 characters long.
+        """
         if len(v) < 8:
             raise ValueError("Password must be < than 8 characters")
         return v
