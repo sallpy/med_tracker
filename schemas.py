@@ -14,6 +14,22 @@ class CreateUser(BaseModel):
     password: str
 
 
+class UserRegister(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+
+    @field_validator("password")
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError("Password must be < than 8 characters")
+        return v
+
+
+class UserIn(User):
+    id: int
+
+
 class AnalysisBase(BaseModel):
     type_of_analysis: str
     type_of_test: str
